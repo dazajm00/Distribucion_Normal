@@ -17,7 +17,6 @@ import javax.swing.border.EmptyBorder;
  *      4. Búsqueda en tabla N(0,1)
  *      5. Resultado numérico
  *      6. Interpretación en contexto
- *      7. Regla empírica 68–95–99.7
  *
  *  No realiza cálculos: solo formatea y presenta lo que
  *  DistribucionNormalModel calculó.
@@ -52,13 +51,7 @@ public class ResultadosPanel extends JPanel {
         area.setBorder(new EmptyBorder(10, 14, 10, 14));
         area.setText(
             "\n  Configure los parámetros y presione  [ CALCULAR ]\n\n" +
-            "  Casos disponibles en el menú superior:\n" +
-            "  • Control de calidad (diámetro de pieza)\n" +
-            "  • Salud pública (presión arterial)\n" +
-            "  • Educación (puntaje en prueba)\n" +
-            "  • Negocios (tiempo de entrega)\n" +
-            "  • Contabilidad (ingresos mensuales)\n" +
-            "  • Personalizado (ingrese sus propios valores)"
+            "  Ingrese sus propios valores en el panel de parámetros."
         );
 
         JScrollPane scroll = new JScrollPane(area);
@@ -102,7 +95,6 @@ public class ResultadosPanel extends JPanel {
         seccionTablaZ(sb, modelo, x1, x2, z1, z2, tipo, prob);
         seccionResultado(sb, tipo, x1, x2, prob);
         seccionInterpretacion(sb, tipo, prob, x1, x2, nombreCaso);
-        seccionReglaEmpirica(sb, mu, sigma);
 
         area.setText(sb.toString());
         area.setCaretPosition(0); // scroll al inicio
@@ -122,7 +114,6 @@ public class ResultadosPanel extends JPanel {
 
     /**
      * Sección 1: modelo estadístico.
-     * Refleja diapositiva 4: "X ~ N(μ, σ²)" con f(x).
      */
     private void seccionModelo(StringBuilder sb, double mu, double sigma) {
         sb.append("┌─ 1. MODELO ESTADÍSTICO ────────────────────────────┐\n");
@@ -137,7 +128,6 @@ public class ResultadosPanel extends JPanel {
 
     /**
      * Sección 2: estandarización.
-     * Refleja diapositiva 6: Z = (X − μ) / σ
      */
     private void seccionEstandarizacion(StringBuilder sb,
                                          double mu, double sigma,
@@ -160,13 +150,6 @@ public class ResultadosPanel extends JPanel {
 
     /**
      * Sección 3: uso de la tabla Z o función CDF.
-     * Refleja la metodología de las diapositivas 8–19:
-     *   - Diap. 8  (Examen):       P(Z > 1.5) ≈ 0.0668
-     *   - Diap. 10 (Control cal.): P(Z ≤ 2.5) = 1 − P(Z > 2.5) = 0.9938
-     *   - Diap. 12 (Salud):        P(Z > 2) = 1 − P(Z ≤ 2) = 0.0228
-     *   - Diap. 14 (Educación):    P(X > 650) = 1 − P(Z ≤ 1.5) = 0.0668
-     *   - Diap. 16 (Negocios):     P(X > 55) = 1 − P(Z ≤ 1.4) = 0.0808
-     *   - Diap. 18 (Contabilidad): P(−0.8 < Z < 1.2) = 0.8849 − 0.2118 = 0.6731
      */
     private void seccionTablaZ(StringBuilder sb,
                                 DistribucionNormalModel m,
@@ -183,12 +166,10 @@ public class ResultadosPanel extends JPanel {
                 sb.append(String.format(
                     "│  P(X > %.4f) = P(Z > %s)%n", x1, df4.format(z1)));
                 if (z1 >= 0) {
-                    // z positivo: la tabla da directamente P(Z > z)
                     sb.append(String.format(
                         "│  → Buscar z = %s en tabla → P = %s%n",
                         df4.format(z1), df5.format(prob)));
                 } else {
-                    // z negativo: usar simetría P(Z > −z) = P(Z < z)
                     sb.append(String.format(
                         "│  z < 0 → simetría: P(Z > %s) = P(Z < %s)%n",
                         df4.format(z1), df4.format(-z1)));
@@ -221,7 +202,7 @@ public class ResultadosPanel extends JPanel {
                     "│    = P(%s < Z < %s)%n",
                     df4.format(z1), df4.format(z2)));
                 sb.append(String.format(
-                    "│    = P(Z > z₁) − P(Z > z₂)          [diap. 7]%n"));
+                    "│    = P(Z > z₁) − P(Z > z₂)%n"));
                 sb.append(String.format(
                     "│    = P(Z > %s) − P(Z > %s)%n",
                     df4.format(z1), df4.format(z2)));
@@ -250,14 +231,6 @@ public class ResultadosPanel extends JPanel {
 
     /**
      * Sección 5: interpretación en lenguaje natural del contexto.
-     * Reproduce el estilo de "Interpretación:" de las diapositivas.
-     *
-     * Ejemplos de referencia:
-     *   Diap. 10: "Aprox. 99.38% de las piezas están dentro del límite"
-     *   Diap. 12: "Aprox. 2.3% de los adultos presentan presión > 150"
-     *   Diap. 14: "Aprox. 6.7% obtiene más de 650 puntos"
-     *   Diap. 16: "Cerca del 8.1% de los pedidos superan las 55 horas"
-     *   Diap. 18: "Aprox. 67.3% obtiene ingresos entre 180 y 230 miles"
      */
     private void seccionInterpretacion(StringBuilder sb, int tipo,
                                         double prob, double x1, double x2,
@@ -284,25 +257,6 @@ public class ResultadosPanel extends JPanel {
                     "│  se ubican entre %.2f y %.2f.%n", pct, caso, x1, x2));
                 break;
         }
-        sb.append("└─────────────────────────────────────────────────────┘\n\n");
-    }
-
-    /**
-     * Sección 6: Regla empírica 68–95–99.7.
-     * Refleja diapositiva 5 ("Propiedades clave → Regla empírica").
-     */
-    private void seccionReglaEmpirica(StringBuilder sb, double mu, double sigma) {
-        sb.append("┌─ 6. REFERENCIA — REGLA EMPÍRICA  68-95-99.7 ──────┐\n");
-        sb.append(String.format(
-            "│  μ ± 1σ  →  [%7.2f , %7.2f]  →  68.27 %%%n",
-            mu - sigma, mu + sigma));
-        sb.append(String.format(
-            "│  μ ± 2σ  →  [%7.2f , %7.2f]  →  95.45 %%%n",
-            mu - 2*sigma, mu + 2*sigma));
-        sb.append(String.format(
-            "│  μ ± 3σ  →  [%7.2f , %7.2f]  →  99.73 %%%n",
-            mu - 3*sigma, mu + 3*sigma));
-        sb.append("│  (Diapositiva 5 — Propiedades clave)               │\n");
         sb.append("└─────────────────────────────────────────────────────┘\n");
     }
 
@@ -310,9 +264,6 @@ public class ResultadosPanel extends JPanel {
     //  UTILIDADES
     // ==========================================================
 
-    /**
-     * Calcula la probabilidad delegando al modelo según el tipo.
-     */
     private double calcularProb(DistribucionNormalModel m,
                                  double x1, double x2, int tipo) {
         return switch (tipo) {
@@ -322,10 +273,6 @@ public class ResultadosPanel extends JPanel {
         };
     }
 
-    /**
-     * Genera la etiqueta de la probabilidad en notación matemática.
-     * Ej: "P(X > 75.00)" o "P(180.00 < X < 230.00)"
-     */
     private String etiqueta(int tipo, double x1, double x2) {
         return switch (tipo) {
             case GraficaPanel.COLA_DERECHA ->

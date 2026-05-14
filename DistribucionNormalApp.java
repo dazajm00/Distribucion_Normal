@@ -1,7 +1,7 @@
-import javax.swing.*;
-import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.border.*;
 
 /**
  * =============================================================
@@ -16,15 +16,6 @@ import java.awt.event.*;
  *    GraficaPanel             → Vista 1 (curva + área sombreada)
  *    ResultadosPanel          → Vista 2 (desarrollo paso a paso)
  *    DistribucionNormalApp    → Controlador + ventana principal
- *
- *  Casos prácticos precargados (diapositivas 8–19):
- *    1. Examen          X ~ N(60, 10²)  — diap. 8
- *    2. Control calidad X ~ N(50, 0.2²) — diap. 10–11
- *    3. Salud pública   X ~ N(120, 15²) — diap. 12–13
- *    4. Educación       X ~ N(500, 100²)— diap. 14–15
- *    5. Negocios        X ~ N(48, 5²)   — diap. 16–17
- *    6. Contabilidad    X ~ N(200, 25²) — diap. 18–19
- *    7. Personalizado   (el usuario ingresa sus propios valores)
  *
  *  Para ejecutar:
  *    javac *.java
@@ -43,31 +34,16 @@ public class DistribucionNormalApp extends JFrame {
     static final Color INPUT_BG  = new Color(28,  38,  60);
     static final Color BORDER_C  = new Color(50,  65, 100);
 
-    // ── Definición de los casos prácticos ───────────────────
-    // Cada caso: { nombre, μ, σ, x1, x2, tipo }
-    // tipo: 0=cola derecha, 1=acumulada, 2=intervalo
-    private static final Object[][] CASOS = {
-        // Nombre                       μ       σ      x1     x2     tipo
-        {"Examen (diap. 8)",           60.0,   10.0,  75.0,  0.0,   GraficaPanel.COLA_DERECHA},
-        {"Control de calidad (d.10)", 50.0,   0.2,   50.5,  0.0,   GraficaPanel.ACUMULADA},
-        {"Salud pública (diap. 12)",  120.0,  15.0,  150.0, 0.0,   GraficaPanel.COLA_DERECHA},
-        {"Educación (diap. 14)",      500.0,  100.0, 650.0, 0.0,   GraficaPanel.COLA_DERECHA},
-        {"Negocios (diap. 16)",        48.0,   5.0,   55.0,  0.0,   GraficaPanel.COLA_DERECHA},
-        {"Contabilidad (diap. 18)",   200.0,  25.0,  180.0, 230.0, GraficaPanel.INTERVALO},
-        {"Personalizado",              0.0,    1.0,   0.0,   0.0,   GraficaPanel.COLA_DERECHA}
-    };
+    // ── Nombre del caso (siempre Personalizado) ──────────────
+    private final String nombreCasoActual = "Personalizado";
 
     // ── Controles de entrada ─────────────────────────────────
     private JTextField  tfMedia, tfDesv, tfX1, tfX2;
     private JComboBox<String> cbTipo;
-    private JComboBox<String> cbCaso;   // selector de caso práctico
 
     // ── Paneles de visualización ─────────────────────────────
     private GraficaPanel    graficaPanel;
     private ResultadosPanel resultadosPanel;
-
-    // ── Caso actualmente seleccionado ────────────────────────
-    private String nombreCasoActual = "Personalizado";
 
     // ==========================================================
     //  CONSTRUCTOR
@@ -85,9 +61,6 @@ public class DistribucionNormalApp extends JFrame {
         add(crearEncabezado(),   BorderLayout.NORTH);
         add(crearCuerpo(),       BorderLayout.CENTER);
         add(crearPie(),          BorderLayout.SOUTH);
-
-        // Cargar el primer caso práctico al iniciar
-        cargarCaso(0);
     }
 
     // ==========================================================
@@ -153,7 +126,7 @@ public class DistribucionNormalApp extends JFrame {
     }
 
     /**
-     * Panel izquierdo: selector de caso, parámetros y botón calcular.
+     * Panel izquierdo: etiqueta "Personalizado", parámetros y botón calcular.
      */
     private JPanel crearPanelControles() {
         JPanel p = new JPanel();
@@ -161,29 +134,29 @@ public class DistribucionNormalApp extends JFrame {
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
         p.setBorder(new EmptyBorder(18, 14, 18, 14));
 
-        // ── Selector de caso práctico ────────────────────────
-        p.add(etiquetaSeccion("CASOS PRÁCTICOS (Diapositivas)"));
+        // ── Sección de caso (solo Personalizado) ─────────────
+        p.add(etiquetaSeccion("CASOS PRÁCTICOS"));
         p.add(Box.createVerticalStrut(7));
 
-        // Construir lista de nombres para el combo
-        String[] nombres = new String[CASOS.length];
-        for (int i = 0; i < CASOS.length; i++)
-            nombres[i] = (String) CASOS[i][0];
-
-        cbCaso = new JComboBox<>(nombres);
-        estilizarCombo(cbCaso);
-        cbCaso.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
-        // Al cambiar de caso, actualizar los campos automáticamente
-        cbCaso.addActionListener(e -> cargarCaso(cbCaso.getSelectedIndex()));
-        p.add(cbCaso);
+        // Etiqueta estática en lugar del combo con scroll
+        JLabel lblPersonalizado = new JLabel("Personalizado");
+        lblPersonalizado.setFont(new Font("Monospaced", Font.PLAIN, 11));
+        lblPersonalizado.setForeground(TEXT_PRI);
+        lblPersonalizado.setBackground(INPUT_BG);
+        lblPersonalizado.setOpaque(true);
+        lblPersonalizado.setBorder(new CompoundBorder(
+            new LineBorder(BORDER_C),
+            new EmptyBorder(5, 7, 5, 7)));
+        lblPersonalizado.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        p.add(lblPersonalizado);
 
         // ── Parámetros de la distribución ───────────────────
         p.add(Box.createVerticalStrut(16));
         p.add(etiquetaSeccion("PARÁMETROS  X ~ N(μ, σ²)"));
         p.add(Box.createVerticalStrut(8));
 
-        tfMedia = new JTextField("60");
-        tfDesv  = new JTextField("10");
+        tfMedia = new JTextField("0");
+        tfDesv  = new JTextField("1");
         p.add(fila("Media  μ :", tfMedia));
         p.add(Box.createVerticalStrut(6));
         p.add(fila("Desv. σ :", tfDesv));
@@ -204,7 +177,7 @@ public class DistribucionNormalApp extends JFrame {
 
         // ── Valores límite ───────────────────────────────────
         p.add(Box.createVerticalStrut(10));
-        tfX1 = new JTextField("75");
+        tfX1 = new JTextField("0");
         tfX2 = new JTextField("0");
         p.add(fila("Valor  x₁ :", tfX1));
         p.add(Box.createVerticalStrut(6));
@@ -269,39 +242,7 @@ public class DistribucionNormalApp extends JFrame {
     // ==========================================================
 
     /**
-     * Carga un caso práctico de la tabla CASOS en los campos de entrada.
-     * Se llama al seleccionar del combo o al iniciar la app.
-     *
-     * @param indice índice de la fila en CASOS[][]
-     */
-    private void cargarCaso(int indice) {
-        if (indice < 0 || indice >= CASOS.length) return;
-
-        Object[] c = CASOS[indice];
-        nombreCasoActual = (String) c[0];
-
-        // Rellenar campos con los valores del caso
-        tfMedia.setText(String.valueOf(c[1]));
-        tfDesv.setText (String.valueOf(c[2]));
-        tfX1.setText   (String.valueOf(c[3]));
-        tfX2.setText   (String.valueOf(c[4]));
-        cbTipo.setSelectedIndex((int) c[5]);
-
-        // Calcular automáticamente al cargar
-        calcular();
-    }
-
-    /**
      * Lee los campos, valida, crea el modelo y actualiza las dos vistas.
-     * Este es el método central del controlador.
-     *
-     * Flujo:
-     *   1. Leer y parsear campos de texto
-     *   2. Validar (σ > 0, valores numéricos)
-     *   3. Crear DistribucionNormalModel(μ, σ)
-     *   4. Calcular la probabilidad según el tipo
-     *   5. Llamar a graficaPanel.actualizar(...)
-     *   6. Llamar a resultadosPanel.mostrar(...)
      */
     private void calcular() {
         double mu, sigma, x1, x2 = 0.0;
@@ -327,10 +268,8 @@ public class DistribucionNormalApp extends JFrame {
         }
 
         int  tipo   = cbTipo.getSelectedIndex();
-        // Construir el modelo con los parámetros leídos
         DistribucionNormalModel modelo = new DistribucionNormalModel(mu, sigma);
 
-        // Calcular probabilidad según tipo seleccionado
         double prob = switch (tipo) {
             case GraficaPanel.COLA_DERECHA -> modelo.probMayorQue(x1);
             case GraficaPanel.ACUMULADA    -> modelo.probMenorQue(x1);
@@ -348,9 +287,6 @@ public class DistribucionNormalApp extends JFrame {
     //  UTILIDADES DE UI
     // ==========================================================
 
-    /**
-     * Etiqueta de sección con línea inferior decorativa.
-     */
     private JLabel etiquetaSeccion(String texto) {
         JLabel l = new JLabel(texto);
         l.setFont(new Font("Monospaced", Font.BOLD, 10));
@@ -363,9 +299,6 @@ public class DistribucionNormalApp extends JFrame {
         return l;
     }
 
-    /**
-     * Fila etiqueta + campo de texto, alineados horizontalmente.
-     */
     private JPanel fila(String etiq, JTextField tf) {
         estilizarCampo(tf);
         JPanel row = new JPanel(new BorderLayout(6, 0));
@@ -380,7 +313,6 @@ public class DistribucionNormalApp extends JFrame {
         return row;
     }
 
-    /** Aplica el estilo oscuro a un JTextField */
     private void estilizarCampo(JTextField tf) {
         tf.setFont(new Font("Monospaced", Font.PLAIN, 12));
         tf.setForeground(TEXT_PRI);
@@ -392,7 +324,6 @@ public class DistribucionNormalApp extends JFrame {
         tf.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
     }
 
-    /** Aplica el estilo oscuro a un JComboBox */
     private void estilizarCombo(JComboBox<?> cb) {
         cb.setFont(new Font("Monospaced", Font.PLAIN, 11));
         cb.setForeground(TEXT_PRI);
@@ -404,22 +335,12 @@ public class DistribucionNormalApp extends JFrame {
     //  PUNTO DE ENTRADA DEL PROGRAMA
     // ==========================================================
 
-    /**
-     * main: arranca la aplicación en el hilo de eventos de Swing.
-     *
-     * Swing es una librería de interfaz gráfica incluida en el JDK.
-     * No requiere dependencias externas.
-     * SwingUtilities.invokeLater garantiza que la UI se cree
-     * en el Event Dispatch Thread (EDT), lo que es obligatorio en Swing.
-     */
     public static void main(String[] args) {
-        // Usar el look and feel cruzado para coherencia entre OS
         try {
             UIManager.setLookAndFeel(
                 UIManager.getCrossPlatformLookAndFeelClassName());
         } catch (Exception ignored) {}
 
-        // Crear y mostrar la ventana en el hilo de Swing
         SwingUtilities.invokeLater(() ->
             new DistribucionNormalApp().setVisible(true)
         );
